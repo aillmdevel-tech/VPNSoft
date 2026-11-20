@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleDevelopmentRegion</key><string>en</string>
+<key>CFBundleLocalizations</key><array><string>ru</string><string>en</string><string>es</string></array>
+<key>NSCameraUsageDescription</key><string>Сканирование QR-кода профиля</string>
+<key>CFBundleExecutable</key><string>Route</string>
+<key>CFBundleIconFile</key><string>Route.icns</string>
+<key>CFBundleIdentifier</key><string>net.pulseroute.client.mac</string>
+<key>CFBundleName</key><string>Маршрут</string>
+<key>CFBundleDisplayName</key><string>Маршрут</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleShortVersionString</key><string>0.39</string>
+<key>CFBundleVersion</key><string>39</string>
+<key>LSMinimumSystemVersion</key><string>13.0</string>
+<key>NSHighResolutionCapable</key><true/>
+</dict></plist>

@@ -1,0 +1,17 @@
+/.claude-runner/
+/artifacts/
+/backups/
+/admin-access/
+/profiles*/
+/build/
+.DS_Store
+__pycache__/
+*.aab
+*.apk
+*.jks
+*.keystore
+*.p12
+*.key
+*.pass
+*.pem
+*.zip
