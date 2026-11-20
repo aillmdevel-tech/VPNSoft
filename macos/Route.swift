@@ -517,7 +517,8 @@ struct JourneyBrowser: NSViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator(self) }
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
-        config.websiteDataStore = .nonPersistent()
+        // Persistent store keeps the passport stamps (localStorage of the bundled file:// page; network loads stay blocked by CSP).
+        config.websiteDataStore = .default()
         config.userContentController.add(context.coordinator,name:"route")
         let view = WKWebView(frame:.zero,configuration:config)
         view.navigationDelegate = context.coordinator

@@ -47,6 +47,7 @@
     } else if ((phase === "connected" || phase === "travel") && !info.still && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       show("return"); timer = setTimeout(() => show(info.phase), 850);
     } else if (phase !== "return") show("home");
+    if (info.phase === "connected") passportVisit();
   };
   function profileDescription(profile) {
     const place = locations[profile.location] || profile.endpoint;
@@ -110,6 +111,8 @@
     const row = document.createElement("li");
     row.className = "server-row";
     row.dataset.id = server.key;
+    if (server.place) row.dataset.place = server.place;
+    row.style.setProperty("--i", String(index));
     const active = server.profiles.some(profile => profile.id === info.active);
     const selected = info.server ? server.endpoint===info.server : server.profiles.some(profile => profile.id === info.selected);
     const unavailable = !server.profiles.some(canConnect);
@@ -952,5 +955,83 @@
     finally { URL.revokeObjectURL(url); }
   };
   $("qr").onsubmit = e => { e.preventDefault(); add(qrValue); };
+  // Passport: a stamp for every city reached through its server, plus days on the road and meteors thrown.
+  const stampLook = {
+    sofia:{flag:"🇧🇬", country:"Болгария", color:"#e8483b", tilt:-6},
+    zurich:{flag:"🇨🇭", country:"Швейцария", color:"#d62828", tilt:5},
+    chisinau:{flag:"🇲🇩", country:"Молдова", color:"#2f6fd6", tilt:-3},
+    vilnius:{flag:"🇱🇹", country:"Литва", color:"#2f9e44", tilt:7},
+  };
+  const passKey = "route.passport";
+  let passport = {stamps:{}, days:[], meteors:0};
+  try { passport = {...passport, ...JSON.parse(localStorage.getItem(passKey) || "{}")}; } catch {}
+  let freshStamp = "";
+  function savePassport() { try { localStorage.setItem(passKey, JSON.stringify(passport)); } catch {} }
+  function connectedPlace() {
+    const ids = [].concat(info.active || [], info.route || []);
+    const live = (info.catalog || []).find(profile => ids.includes(profile.id));
+    if (live && stampLook[live.location]) return live.location;
+    const pinned = info.server && groupedServers(orderedProfiles()).find(item => item.endpoint === info.server || item.profiles.some(profile => profile.id === info.server));
+    return pinned && stampLook[pinned.place] ? pinned.place : "";
+  }
+  function passportVisit() {
+    const today = new Date().toISOString().slice(0, 10);
+    let changed = false;
+    if (!passport.days.includes(today)) { passport.days = passport.days.concat(today).slice(-400); changed = true; }
+    const place = connectedPlace();
+    if (place && !passport.stamps[place]) {
+      passport.stamps[place] = today; changed = true; freshStamp = place;
+      const look = stampLook[place], pop = document.createElement("div");
+      pop.className = "stamp-pop"; pop.style.setProperty("--c", look.color); pop.setAttribute("role", "status");
+      const icon = document.createElement("i"); icon.textContent = look.flag;
+      const city = document.createElement("b"); city.textContent = locations[place];
+      pop.append(icon, "Новый штамп", document.createElement("br"), city);
+      document.body.append(pop); setTimeout(() => pop.remove(), 2600);
+      window.RouteSound?.play("stamp"); setTimeout(() => window.RouteSound?.play("chime"), 380);
+      $("pass-chip").classList.remove("bump"); void $("pass-chip").offsetWidth; $("pass-chip").classList.add("bump");
+    }
+    if (changed) { savePassport(); renderPassport(); }
+  }
+  function renderPassport() {
+    const got = Object.keys(stampLook).filter(place => passport.stamps[place]);
+    $("pass-count").textContent = got.length + " / " + Object.keys(stampLook).length;
+    $("pass-stamps").textContent = String(got.length);
+    $("pass-days").textContent = String(passport.days.length);
+    $("pass-meteors").textContent = String(passport.meteors);
+    const lang = document.documentElement.lang || "ru";
+    $("stamps").replaceChildren(...Object.entries(stampLook).map(([place, look]) => {
+      const card = document.createElement("div"), icon = document.createElement("i"), name = document.createElement("span"), note = document.createElement("small");
+      const date = passport.stamps[place];
+      card.className = "stamp" + (date ? " got" : "") + (place === freshStamp ? " fresh" : "");
+      card.style.setProperty("--c", look.color); card.style.setProperty("--r", look.tilt + "deg");
+      icon.textContent = date ? look.flag : "🔒";
+      name.textContent = date ? locations[place] : look.country;
+      note.textContent = date ? new Date(date + "T12:00:00").toLocaleDateString(lang, {day:"numeric", month:"short"}) : "Ещё не были";
+      card.append(icon, name, note);
+      return card;
+    }));
+    freshStamp = "";
+  }
+  addEventListener("route-toy", event => {
+    if (event.detail === "meteor") { passport.meteors++; savePassport(); renderPassport(); }
+  });
+  $("pass-chip").onclick = () => { renderPassport(); $("passport").showModal(); window.RouteSound?.play("pop"); };
+  $("passport-close").onclick = () => $("passport").close();
+  $("passport").onclose = () => $("pass-chip").focus({preventScroll:true});
+  renderPassport();
+
+  // Toys bar: physical gags on the 3D planet.
+  for (const button of document.querySelectorAll("#toys .toy")) {
+    button.onclick = () => {
+      const scene = window.RouteGlobe3D?.active;
+      if (!scene || !scene.toy(button.dataset.toy)) return;
+      button.classList.remove("fired"); void button.offsetWidth; button.classList.add("fired");
+      setTimeout(() => button.classList.remove("fired"), 700);
+    };
+  }
+  $("sound-row").hidden = !window.RouteSound;
+  $("fox").addEventListener("click", () => { if (window.RouteSound) $("pref-sound").checked = window.RouteSound.enabled; });
+  $("pref-sound").onchange = e => { window.RouteSound?.setEnabled(e.target.checked); if (e.target.checked) window.RouteSound?.play("chime"); };
+
   show("home"); send("ready");
 })();

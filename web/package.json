@@ -1,0 +1,20 @@
+{
+  "name": "route-globe3d",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "3D globe scene for android/assets/journey (Three.js, built to a classic IIFE: the WebView CSP forbids modules and fetch).",
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "postprocessing": "6.39.6",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@types/three": "0.187.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.8"
+  }
+}

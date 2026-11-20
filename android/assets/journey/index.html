@@ -1,6 +1,7 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' file: blob: data:; script-src 'self' file:; style-src 'self' file:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"><title>Маршрут</title><link rel="stylesheet" href="style.css"></head><body><div class="app preview" id="preview" data-phase="home">
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' file: blob: data:; script-src 'self' file:; style-src 'self' file:; font-src 'self' file:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"><title>Маршрут</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="theme.css"></head><body><div class="app preview" id="preview" data-phase="home">
       <div class="appbar">
         <button class="fox-tool" type="button" id="fox" aria-label="Лис. Настройки"><span class="fox-figure" aria-hidden="true"><img class="fox-tail" src="fox-tail.webp" alt=""><img class="fox-body" src="fox-body.webp" alt=""><img class="fox-ears" src="fox-ears.webp" alt=""></span><span>Настройки</span></button>
+        <button class="pass-chip" type="button" id="pass-chip" aria-label="Паспорт путешественника"><b id="pass-count">0 / 4</b><span>Паспорт</span></button>
         <span class="vpn-pill" id="state" role="status" aria-live="polite">Отключено</span><button class="plus-tool" type="button" id="add" aria-label="Добавить профиль">+</button>
       </div>
       <div class="scene">
@@ -12,6 +13,13 @@
         </div>
         
         <span class="paper-plane" aria-hidden="true"></span>
+        <div class="toys" id="toys" role="toolbar" aria-label="Игрушки планеты">
+          <button class="toy" type="button" data-toy="meteor" aria-label="Метеорит">☄️<small>Метеор</small></button>
+          <button class="toy" type="button" data-toy="storm" aria-label="Гроза">⛈️<small>Гроза</small></button>
+          <button class="toy" type="button" data-toy="tornado" aria-label="Смерч">🌪️<small>Смерч</small></button>
+          <button class="toy" type="button" data-toy="snow" aria-label="Снегопад">❄️<small>Снег</small></button>
+          <button class="toy" type="button" data-toy="volcano" aria-label="Вулкан">🌋<small>Вулкан</small></button>
+        </div>
         <div id="crab-anchor" class="figure-anchor"><div class="crab-window" aria-hidden="true">
           <div class="crab-water"><img class="crab-body" src="crab.webp" alt=""></div>
           <span class="crab-ripple"></span><span class="crab-ripple ripple-later"></span>
@@ -75,7 +83,8 @@
 <button id="pref-update" class="pref-row"><svg class="setting-icon" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10a8 8 0 1 1 .7 6M4 4.5v5.7h5.7"/></svg><span>Проверить обновления</span><small id="pref-version"></small></button></div></section>
 <section class="pref-group"><h3>Оформление</h3><div class="pref-list">
 <label class="pref-row" id="language-row" for="pref-language" hidden><span>Язык интерфейса</span><select id="pref-language"><option value="system">Как в системе</option><option value="ru" lang="ru">Русский</option><option value="en" lang="en">English</option><option value="es" lang="es">Español</option></select></label>
-<label class="pref-row" for="pref-motion"><svg class="setting-icon" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10a2.5 2.5 0 1 0-2.5-2.5M2 12h16a2.5 2.5 0 1 0-2.5-2.5M4 16h8a2.5 2.5 0 1 1-2.5 2.5"/></svg><span>Анимации сцены</span><input type="checkbox" role="switch" id="pref-motion"></label></div></section>
+<label class="pref-row" for="pref-motion"><svg class="setting-icon" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10a2.5 2.5 0 1 0-2.5-2.5M2 12h16a2.5 2.5 0 1 0-2.5-2.5M4 16h8a2.5 2.5 0 1 1-2.5 2.5"/></svg><span>Анимации сцены</span><input type="checkbox" role="switch" id="pref-motion"></label>
+<label class="pref-row" for="pref-sound" id="sound-row"><svg class="setting-icon" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span>Звуки планеты</span><input type="checkbox" role="switch" id="pref-sound"></label></div></section>
 <details class="terrain-credits"><summary>Источники рельефа</summary><small>Mapzen Terrain Tiles · * ArcticDEM terrain data DEM(s) were created from DigitalGlobe, Inc., imagery and   funded under National Science Foundation awards 1043681, 1559691, and 1542736;<br>Australia terrain data © Commonwealth of Australia (Geoscience Australia) 2017;<br>Austria terrain data © offene Daten Österreichs – Digitales Geländemodell (DGM)   Österreich;<br>Canada terrain data contains information licensed under the Open Government   Licence – Canada;<br>Europe terrain data produced using Copernicus data and information funded by the   European Union - EU-DEM layers;<br>Global ETOPO1 terrain data U.S. National Oceanic and Atmospheric Administration<br>Mexico terrain data source: INEGI, Continental relief, 2016;<br>New Zealand terrain data Copyright 2011 Crown copyright (c) Land Information New   Zealand and the New Zealand Government (All rights reserved);<br>Norway terrain data © Kartverket;<br>United Kingdom terrain data © Environment Agency copyright and/or database right   2015. All rights reserved;<br>United States 3DEP (formerly NED) and global GMTED2010 and SRTM terrain data   courtesy of the U.S. Geological Survey.</small></details></dialog>
 <dialog class="loom" id="tools" aria-labelledby="tools-title">
 <div class="loom-head"><button class="x-button" type="button" id="back" aria-label="К способам добавления" hidden>‹</button><h2 id="tools-title" tabindex="-1">Добавить профиль</h2><button autofocus type="button" class="x-button" id="close" aria-label="Закрыть">×</button></div>
@@ -105,4 +114,8 @@
 <button class="save" id="share-image" disabled>Поделиться QR-кодом</button>
 <button class="choice" id="share-zip">Отправить профили сервера в ZIP</button></dialog>
 <dialog id="remove-dialog"><p id="remove-text"></p><form method="dialog"><button autofocus>Отмена</button> <button type="button" id="remove-confirm">Удалить</button></form></dialog>
-<script src="jsQR.js"></script><script src="world-land.js"></script><script src="elevation.js"></script><script src="powder-texture.js"></script><script src="globe.js"></script><script src="motion-textures.js"></script><script src="motion.js"></script><script src="journey.js"></script></body></html>
+<dialog id="passport" aria-labelledby="passport-title"><div class="pref-head"><h2 id="passport-title">Паспорт</h2><button type="button" id="passport-close" aria-label="Закрыть">×</button></div>
+<div class="pass-stats"><div><b id="pass-stamps">0</b><span>Штампов</span></div><div><b id="pass-days">0</b><span>Дней в пути</span></div><div><b id="pass-meteors">0</b><span>Метеоритов</span></div></div>
+<div class="stamps" id="stamps"></div>
+<p class="pass-hint">Подключитесь через сервер в новом городе — Принц поставит штамп.</p></dialog>
+<script src="jsQR.js"></script><script src="world-land.js"></script><script src="elevation.js"></script><script src="powder-texture.js"></script><script src="globe.js"></script><script src="globe3d.js"></script><script src="motion-textures.js"></script><script src="motion.js"></script><script src="journey.js"></script></body></html>

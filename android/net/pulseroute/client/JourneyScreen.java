@@ -56,6 +56,7 @@ final class JourneyScreen extends FrameLayout {
         browser.setBackgroundColor(Color.rgb(16,51,50));
         WebSettings web = browser.getSettings();
         web.setJavaScriptEnabled(true);
+        web.setDomStorageEnabled(true); // passport stamps and sound toggle (localStorage, file:// origin only)
         web.setAllowFileAccess(false);
         web.setBlockNetworkLoads(true);
         web.setAllowFileAccessFromFileURLs(false);

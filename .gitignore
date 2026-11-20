@@ -15,3 +15,5 @@ __pycache__/
 *.pass
 *.pem
 *.zip
+/art/out/
+/build-*.log

@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "journey-web", "runtimeExecutable": "zsh", "runtimeArgs": ["tools/web-preview/serve.zsh", "5180"], "port": 5180 }
+  ]
+}

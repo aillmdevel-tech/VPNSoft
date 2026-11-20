@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Маршрут — арт-борд</title>
+<style>
+@font-face{font-family:Nunito;font-weight:600;src:url(../../../android/assets/journey/fonts/nunito-cyrillic-600-normal.woff2) format("woff2");unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:Nunito;font-weight:600;src:url(../../../android/assets/journey/fonts/nunito-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:Nunito;font-weight:800;src:url(../../../android/assets/journey/fonts/nunito-cyrillic-800-normal.woff2) format("woff2");unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:Nunito;font-weight:800;src:url(../../../android/assets/journey/fonts/nunito-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:Nunito;font-weight:900;src:url(../../../android/assets/journey/fonts/nunito-cyrillic-900-normal.woff2) format("woff2");unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:Nunito;font-weight:900;src:url(../../../android/assets/journey/fonts/nunito-latin-900-normal.woff2) format("woff2")}
+:root{
+  --sky-top:#2dc9f2;--sky-bot:#9fe6ff;--ink:#1d3b26;--ink2:#5d7a66;--card:#fff8ea;--card-line:#eadfc4;
+  --lime1:#c4f257;--lime2:#76c81f;--lime-shadow:#4e9a12;--gold:#ffc93c;--coral:#ff6b5b;--white:#fff;
+  --glass:rgba(255,255,255,.26);--glass-line:rgba(255,255,255,.55);
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:Nunito,system-ui,sans-serif;background:#0f3b4a;color:var(--ink);padding:32px 16px 48px;display:flex;flex-direction:column;align-items:center;gap:28px}
+h1.board{color:#e9fbff;font-weight:900;font-size:26px;letter-spacing:.2px}
+.board-note{color:#a9d9e6;font-weight:600;font-size:14px;max-width:1240px;text-align:center}
+.row{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+.phone{width:390px;height:844px;border-radius:46px;overflow:hidden;position:relative;
+  background:radial-gradient(120% 60% at 50% 32%,#c8f4ff 0%,rgba(200,244,255,0) 60%),linear-gradient(180deg,var(--sky-top) 0%,#6fdaf8 46%,var(--sky-bot) 100%);
+  box-shadow:0 0 0 10px #0a222b,0 30px 60px rgba(0,0,0,.45)}
+.phone.night{background:radial-gradient(120% 60% at 50% 32%,#3d6fb5 0%,rgba(61,111,181,0) 60%),linear-gradient(180deg,#1b2f6b 0%,#2a4f96 50%,#5a86c9 100%)}
+.cap{position:absolute;top:-34px;left:0;right:0;text-align:center;color:#cfeff8;font-weight:800;font-size:14px}
+.wrap{position:relative}
+/* sky decor */
+.cloud{position:absolute;background:#fff;border-radius:50px;filter:drop-shadow(0 6px 0 rgba(80,170,210,.25));opacity:.95;animation:drift 18s ease-in-out infinite alternate}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:55%;height:150%;left:14%;bottom:20%}.cloud::after{width:40%;height:120%;right:12%;bottom:30%}
+@keyframes drift{to{transform:translateX(18px)}}
+.sparkle{position:absolute;width:10px;height:10px;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:tw 2.4s ease-in-out infinite}
+@keyframes tw{50%{transform:scale(.4);opacity:.4}}
+/* top bar */
+.top{position:absolute;top:18px;left:16px;right:16px;display:flex;align-items:center;gap:10px;z-index:5}
+.avatar{width:58px;height:58px;border-radius:50%;background:linear-gradient(#ffe7c2,#ffc98a);border:4px solid #fff;box-shadow:0 4px 0 rgba(0,80,110,.25);display:grid;place-items:center;overflow:hidden;flex:none}
+.avatar img{width:120%;margin-top:14%}
+.pass{flex:none;min-width:0;text-align:center;white-space:nowrap;background:var(--glass);border:2px solid var(--glass-line);backdrop-filter:blur(6px);border-radius:20px;padding:5px 12px 6px;color:#fff;line-height:1.05;text-shadow:0 2px 0 rgba(0,60,90,.25)}
+.pass b{display:block;font-weight:900;font-size:15px}.pass span{font-weight:800;font-size:12.5px;opacity:.95;display:block;overflow:hidden;text-overflow:ellipsis}
+.status{white-space:nowrap;flex:none;display:flex;align-items:center;gap:7px;background:var(--card);border-radius:22px;padding:8px 14px;font-weight:900;font-size:15px;box-shadow:0 4px 0 rgba(0,80,110,.2)}
+.dot{width:11px;height:11px;border-radius:50%;background:#a9b6ad;box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
+.on .dot{background:#4fd02a;box-shadow:0 0 0 4px rgba(79,208,42,.25)}
+.plus{width:48px;height:48px;border-radius:16px;background:var(--glass);border:2px dashed rgba(255,255,255,.85);color:#fff;font-weight:900;font-size:30px;display:grid;place-items:center;flex:none}
+/* planet */
+.planet{position:absolute;left:50%;top:92px;width:372px;height:372px;transform:translateX(-50%)}
+.planet img.globe{width:100%;height:100%;filter:drop-shadow(0 18px 18px rgba(0,90,140,.28))}
+.halo{position:absolute;inset:6%;border-radius:50%;box-shadow:0 0 0 10px rgba(255,255,255,.18),0 0 60px 20px rgba(255,255,255,.35);pointer-events:none}
+.prince{position:absolute;width:96px;left:44%;top:6%;filter:drop-shadow(0 6px 4px rgba(0,50,20,.3))}
+.pin{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%)}
+.bubble{background:#fff;border-radius:14px;padding:5px 10px;font-weight:900;font-size:14px;display:flex;gap:6px;align-items:center;box-shadow:0 3px 0 rgba(0,70,100,.22);white-space:nowrap}
+.marker{width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:linear-gradient(135deg,#ffb04a,var(--coral));border:3px solid #fff;margin-top:4px;box-shadow:0 3px 4px rgba(0,0,0,.2)}
+.marker.small{width:14px;height:14px;border-width:2px;background:#fff}
+.arc{position:absolute;inset:0;pointer-events:none}
+.plane{position:absolute;font-size:30px;filter:drop-shadow(0 4px 2px rgba(0,60,90,.25))}
+/* toys */
+.toys{position:absolute;right:12px;top:150px;display:flex;flex-direction:column;gap:10px;z-index:4}
+.toy{width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#e4f8ff);border:3px solid #fff;box-shadow:0 4px 0 rgba(0,80,110,.25);display:grid;place-items:center;font-size:24px;position:relative}
+.toy.hot::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid var(--gold);animation:ring 1.6s ease-out infinite}
+@keyframes ring{to{transform:scale(1.35);opacity:0}}
+.toy small{position:absolute;bottom:-14px;font-size:10px;font-weight:900;color:#fff;text-shadow:0 1px 0 rgba(0,60,90,.5)}
+/* bottom */
+.chips{position:absolute;top:478px;left:16px;right:16px;display:flex;justify-content:center;gap:10px}
+.chip{white-space:nowrap;display:flex;align-items:center;gap:7px;background:var(--card);border-radius:22px;padding:8px 14px;font-weight:900;font-size:14px;box-shadow:0 4px 0 rgba(0,80,110,.2)}
+.chip i{font-style:normal;color:#3fa61c}
+.main{position:absolute;top:532px;left:34px;right:34px;height:68px;border-radius:34px;border:0;font:900 23px Nunito;color:#173d10;
+  background:linear-gradient(180deg,var(--lime1) 0%,#9be038 45%,var(--lime2) 100%);box-shadow:0 7px 0 var(--lime-shadow),0 14px 22px rgba(40,110,20,.35),inset 0 3px 0 rgba(255,255,255,.6);
+  display:flex;align-items:center;justify-content:center;gap:12px}
+.main::after{content:"";position:absolute;left:18px;right:18px;top:7px;height:16px;border-radius:12px;background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,0))}
+.main.home{background:linear-gradient(180deg,#fffdf6,#ffeccc);color:#7a4a14;box-shadow:0 7px 0 #e0b56d,0 14px 22px rgba(150,100,20,.25),inset 0 3px 0 #fff}
+.note{position:absolute;top:614px;left:0;right:0;text-align:center;color:#fff;font-weight:800;font-size:14px;text-shadow:0 2px 0 rgba(0,60,90,.25)}
+.sheet{position:absolute;left:12px;right:12px;top:650px;bottom:-20px;background:var(--card);border-radius:28px 28px 0 0;padding:16px 14px;box-shadow:0 -6px 0 rgba(255,255,255,.5)}
+.sheet.tall{top:300px}
+.sheet h3{font-weight:900;font-size:21px;display:flex;align-items:center;gap:8px}
+.sheet h3 small{margin-left:auto;font-weight:800;font-size:13px;color:var(--ink2)}
+.srv{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--card-line);border-radius:18px;padding:9px 12px;margin-top:9px;box-shadow:0 3px 0 var(--card-line)}
+.srv.sel{border-color:#8fd94a;background:linear-gradient(90deg,#f1ffd9,#fff);box-shadow:0 3px 0 #a8dc6a}
+.rank{width:30px;text-align:center;font-weight:900;font-size:15px;line-height:1}
+.rank em{display:block;font-style:normal;font-size:16px}
+.flag{font-size:26px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#f4efe2;flex:none}
+.srv>div:nth-child(3){min-width:0;flex:1}.srv b{font-weight:900;font-size:17px;display:block}.srv span{font-weight:600;font-size:12.5px;color:var(--ink2);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ok{margin-left:auto;font-weight:900;font-size:13px;color:#3d9a17;background:#e8f9d7;border-radius:12px;padding:4px 9px;white-space:nowrap}
+.ok.off{color:#9a7a3d;background:#f5ecd6}
+.grip{color:#b9ad8e;font-size:18px;letter-spacing:-2px}
+/* passport */
+.stamps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.stamp{aspect-ratio:1.25;border-radius:18px;border:3px dashed #d9c79c;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#a08a5a;background:#fffdf5}
+.stamp.got{border:3px solid var(--c);color:var(--c);background:radial-gradient(circle,#fff 55%,#fff5e0);transform:rotate(var(--r))}
+.stamp.got div{font-size:30px;line-height:1.1}
+.stats{display:flex;gap:8px;margin-top:12px}
+.stat{flex:1;background:#fff;border:2px solid var(--card-line);border-radius:16px;padding:8px;text-align:center}
+.stat b{display:block;font-size:22px;font-weight:900}.stat span{font-size:12px;font-weight:700;color:var(--ink2)}
+.meteor{position:absolute;width:120px;height:8px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,0),#ffe08a 60%,#ff7a2e);transform:rotate(32deg);filter:drop-shadow(0 0 6px #ffb347)}
+.meteor::after{content:"";position:absolute;right:-8px;top:-8px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#b98a5c,#6d4a2c);box-shadow:0 0 14px 4px rgba(255,150,60,.8)}
+.boom{position:absolute;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,#fff 0,#ffe27a 25%,#ff8a3d 45%,rgba(255,120,60,0) 70%)}
+.shock{position:absolute;width:150px;height:60px;border-radius:50%;border:4px solid rgba(255,255,255,.8);transform:rotate(-12deg)}
+.legend{max-width:1240px;color:#cdeaf2;font-weight:600;font-size:14px;line-height:1.5;columns:2;column-gap:40px}
+.legend b{color:#fff}
+</style>
+</head>
+<body>
+<h1 class="board">Маршрут · арт-борд, этап 0</h1>
+<p class="board-note">Планета — первый рендер из Blender (<code>art/blender/build_planet.py</code>, данные суши и рельефа из приложения). Принц и Лис — пока старые 2D-спрайты, в 3D будут на этапе 6. Эффекты в мокапе статичны.</p>
+
+<div class="row">
+  <!-- 1 HOME -->
+  <div class="wrap"><div class="cap">1 · Главная, отключено</div>
+  <div class="phone">
+    <div class="cloud" style="width:70px;height:26px;left:20px;top:110px"></div>
+    <div class="cloud" style="width:90px;height:30px;right:70px;top:470px;animation-delay:-6s"></div>
+    <i class="sparkle" style="left:60px;top:430px"></i><i class="sparkle" style="right:90px;top:96px;animation-delay:-1s"></i>
+    <div class="top">
+      <div class="avatar"><img src="../../../android/assets/journey/fox.webp" alt=""></div>
+      <div class="pass"><b>🛂 2</b><span>5 дн.</span></div>
+      <div class="status"><i class="dot"></i>Отключено</div>
+      <div class="plus">+</div>
+    </div>
+    <div class="planet"><img class="globe" src="planet.webp" alt=""><div class="halo"></div>
+      <img class="prince" src="prince.png" alt="">
+      <div class="pin" style="left:62%;top:40%"><div class="bubble">🇧🇬 София</div><div class="marker small"></div></div>
+      <div class="pin" style="left:28%;top:36%"><div class="bubble">🇨🇭 Цюрих</div><div class="marker small"></div></div>
+      <div class="pin" style="left:68%;top:22%"><div class="bubble">🇲🇩 Кишинёв</div><div class="marker small"></div></div>
+    </div>
+    <div class="plane" style="left:30px;top:150px;transform:rotate(-18deg)">✈️</div>
+    <div class="toys">
+      <div class="toy hot">☄️<small>Метеор</small></div>
+      <div class="toy">⛈️<small>Погода</small></div>
+      <div class="toy">❄️<small>Снег</small></div>
+    </div>
+    <button class="main">Подключить</button>
+    <p class="note">Коснитесь Принца или кнопки «Подключить»</p>
+    <div class="sheet"><h3>🗂️ Серверы <small>выше — приоритетнее</small></h3>
+      <div class="srv sel"><div class="rank"><em>⚡</em></div><div class="flag">🧭</div><div><b>Автовыбор</b><span>лучший по проверкам</span></div><div class="ok">выбран</div></div>
+    </div>
+  </div></div>
+
+  <!-- 2 CONNECTED -->
+  <div class="wrap"><div class="cap">2 · Подключено (после полёта)</div>
+  <div class="phone">
+    <div class="cloud" style="width:80px;height:28px;right:24px;top:120px"></div>
+    <div class="cloud" style="width:70px;height:24px;left:14px;top:440px;animation-delay:-4s"></div>
+    <i class="sparkle" style="left:250px;top:150px"></i><i class="sparkle" style="left:280px;top:170px;animation-delay:-.8s"></i>
+    <div class="top">
+      <div class="avatar"><img src="../../../android/assets/journey/fox.webp" alt=""></div>
+      <div class="pass"><b>🛂 3</b><span>6 дн.</span></div>
+      <div class="status on"><i class="dot"></i>Подключено</div>
+      <div class="plus">+</div>
+    </div>
+    <div class="planet"><img class="globe" src="planet.webp" alt=""><div class="halo"></div>
+      <svg class="arc" viewBox="0 0 372 372"><path d="M70 250 Q 140 90 214 118" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round"/><circle cx="70" cy="250" r="9" fill="#fff"/></svg>
+      <div class="pin" style="left:16%;top:69%"><div class="bubble">🏠 Вы здесь</div></div>
+      <img class="prince" src="prince.png" alt="" style="left:47%;top:4%;width:88px">
+      <div class="pin" style="left:66%;top:36%"><div class="bubble">🇧🇬 София ✓</div><div class="marker"></div></div>
+    </div>
+    <div class="plane" style="left:250px;top:110px;transform:rotate(12deg)">🎈</div>
+    <div class="toys">
+      <div class="toy">☄️<small>Метеор</small></div>
+      <div class="toy">⛈️<small>Погода</small></div>
+      <div class="toy">❄️<small>Снег</small></div>
+    </div>
+    <div class="chips"><div class="chip"><i>●</i> Telegram</div><div class="chip"><i>●</i> ChatGPT</div><div class="chip">VLESS · HTTP/3</div></div>
+    <button class="main home">🏠 Домой</button>
+    <p class="note">София · штамп получен! 🎉</p>
+    <div class="sheet"><h3>🗂️ Серверы <small>выше — приоритетнее</small></h3>
+      <div class="srv sel"><div class="rank"><em>👑</em>1</div><div class="flag">🇧🇬</div><div><b>София</b><span>131.123.37.10 · 1 протокол</span></div><div class="ok">● работает</div><div class="grip">⋮⋮</div></div>
+    </div>
+  </div></div>
+
+  <!-- 3 SERVERS + PASSPORT -->
+  <div class="wrap"><div class="cap">3 · Серверы и паспорт (свайп вверх)</div>
+  <div class="phone">
+    <div class="top">
+      <div class="avatar"><img src="../../../android/assets/journey/fox.webp" alt=""></div>
+      <div class="pass"><b>🛂 3</b><span>6 дн.</span></div>
+      <div class="status on"><i class="dot"></i>Подключено</div>
+      <div class="plus">+</div>
+    </div>
+    <div class="planet" style="top:88px;width:230px;height:230px"><img class="globe" src="planet.webp" alt=""></div>
+    <div class="sheet tall" style="top:300px">
+      <h3>🗂️ Серверы <small>перетащите ⋮⋮</small></h3>
+      <div class="srv sel"><div class="rank"><em>👑</em>1</div><div class="flag">🇧🇬</div><div><b>София</b><span>131.123.37.10 · 1 протокол</span></div><div class="ok">● работает</div><div class="grip">⋮⋮</div></div>
+      <div class="srv"><div class="rank"><em>🥈</em>2</div><div class="flag">🇨🇭</div><div><b>Цюрих</b><span>132.243.161.20 · REALITY</span></div><div class="ok">● готов</div><div class="grip">⋮⋮</div></div>
+      <div class="srv"><div class="rank"><em>🥉</em>3</div><div class="flag">🇲🇩</div><div><b>Кишинёв</b><span>176.123.5.30 · AmneziaWG</span></div><div class="ok off">нет связи</div><div class="grip">⋮⋮</div></div>
+      <h3 style="margin-top:16px">🛂 Паспорт <small>штампы городов</small></h3>
+      <div class="stamps">
+        <div class="stamp got" style="--c:#2e9b4f;--r:-6deg"><div>⛪</div>СОФИЯ</div>
+        <div class="stamp got" style="--c:#d2453a;--r:5deg"><div>🏔️</div>ЦЮРИХ</div>
+        <div class="stamp">?<br>Кишинёв</div>
+      </div>
+      <div class="stats"><div class="stat"><b>3</b><span>страны</span></div><div class="stat"><b>6</b><span>дней в пути</span></div><div class="stat"><b>14</b><span>метеоритов</span></div></div>
+    </div>
+  </div></div>
+</div>
+
+<div class="row">
+  <!-- 4 TOYS -->
+  <div class="wrap"><div class="cap">4 · Игрушки: метеорит и погода</div>
+  <div class="phone">
+    <div class="top">
+      <div class="avatar"><img src="../../../android/assets/journey/fox.webp" alt=""></div>
+      <div class="pass"><b>🛂 3</b><span>6 дн.</span></div>
+      <div class="status on"><i class="dot"></i>Подключено</div>
+      <div class="plus">+</div>
+    </div>
+    <div class="meteor" style="left:40px;top:150px"></div>
+    <div class="planet"><img class="globe" src="planet.webp" alt=""><div class="halo"></div>
+      <div class="shock" style="left:150px;top:175px"></div>
+      <div class="boom" style="left:180px;top:160px"></div>
+      <div class="cloud" style="width:70px;height:24px;left:60px;top:40px;background:#9fb2c7"></div>
+      <svg style="position:absolute;left:78px;top:70px" width="40" height="60"><path d="M22 0 8 28h12L10 60 34 22H22z" fill="#ffe14d" stroke="#fff" stroke-width="2"/></svg>
+    </div>
+    <div class="toys">
+      <div class="toy hot">☄️<small>Метеор</small></div>
+      <div class="toy">⛈️<small>Погода</small></div>
+      <div class="toy">❄️<small>Снег</small></div>
+    </div>
+    <div class="chips"><div class="chip">💥 Бум! кратер затянется за 10 с</div></div>
+    <button class="main home">🏠 Домой</button>
+    <p class="note">Свайп от края — метеорит · тап по туче — гроза</p>
+  </div></div>
+
+  <!-- 5 NIGHT -->
+  <div class="wrap"><div class="cap">5 · Ночь по реальному солнцу</div>
+  <div class="phone night">
+    <i class="sparkle" style="left:40px;top:120px"></i><i class="sparkle" style="left:320px;top:200px;animation-delay:-.6s"></i><i class="sparkle" style="left:90px;top:470px;animation-delay:-1.4s"></i>
+    <div class="top">
+      <div class="avatar"><img src="../../../android/assets/journey/fox.webp" alt=""></div>
+      <div class="pass"><b>🛂 3</b><span>6 дн.</span></div>
+      <div class="status"><i class="dot"></i>Отключено</div>
+      <div class="plus">+</div>
+    </div>
+    <div class="planet"><img class="globe" src="planet.webp" alt="" style="filter:brightness(.55) saturate(.8) hue-rotate(10deg) drop-shadow(0 0 30px rgba(120,170,255,.5))"><div class="halo" style="box-shadow:0 0 60px 16px rgba(130,180,255,.35)"></div>
+      <img class="prince" src="prince.png" alt="" style="filter:brightness(.8)">
+    </div>
+    <button class="main">Подключить</button>
+    <p class="note">Ночная сторона: огни городов и северное сияние</p>
+  </div></div>
+
+  <div class="legend" style="max-width:420px;columns:1">
+    <p><b>Палитра:</b> небо #2dc9f2→#9fe6ff, океан #1a7fe0/#4fd2ff, суша #79cf3a/#b4df45, кнопка #c4f257→#76c81f, карточки #fff8ea.</p>
+    <p><b>Шрифт:</b> Nunito 900/800/600 (OFL, локально, кириллица).</p>
+    <p><b>Новое в UI:</b> паспорт у аватара Лиса, панель игрушек справа (метеор / погода / снег), чипы маршрута Telegram/ChatGPT из реального состояния, «Домой» — кремовая кнопка, чтобы не путать с «Подключить».</p>
+    <p><b>Сохранено:</b> «+» для профилей, статус, список серверов с приоритетом и перетаскиванием, Принц запускает подключение, Лис — настройки.</p>
+    <p><b>Пинг:</b> ядро сейчас отдаёт только «работает / нет связи», поэтому вместо мс — статус.</p>
+  </div>
+</div>
+</body>
+</html>
