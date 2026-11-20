@@ -249,14 +249,20 @@
     return row;
   }
 
+  const heroKey = "route.hero";
+  const heroes = [["prince", "Принц"], ["bear", "Мишка"], ["pig", "Хрюша"], ["rv", "Автодом"]];
+  let hero = "prince";
+  try { const saved = localStorage.getItem(heroKey); if (heroes.some(([id]) => id === saved)) hero = saved; } catch {}
+  const heroName = () => (heroes.find(([id]) => id === hero) || heroes[0])[1];
+
   function renderPriority() {
     const ordered = orderedProfiles();
     const top = ordered.find(canConnect);
     $("profile-table").hidden = !ordered.length;
     $("prince").disabled = phase!=="home" || !!info.busy || (ordered.length > 0 && !top);
-    $("prince").setAttribute("aria-label", top
-      ? "Принц. Подключить " + profileDescription(top)
-      : "Принц. Начать подключение");
+    $("prince").setAttribute("aria-label", heroName() + ". " + (top
+      ? "Подключить " + profileDescription(top)
+      : "Начать подключение"));
     const key = JSON.stringify([ordered, info.server, info.selected, info.active, info.busy, info.protectedMode, expandedServer]);
     if (drag || key === priorityKey) return;
     priorityKey = key;
@@ -469,6 +475,7 @@
       $("pins").replaceChildren(...pins);
       {
         globe ||= window.RouteGlobe.create($("globe-map"), $("globe-markers"),positionActors);
+        applyHero();
         globe.markers(pins);
         $("pins").hidden=false;
       }
@@ -1019,6 +1026,38 @@
   $("passport-close").onclick = () => $("passport").close();
   $("passport").onclose = () => $("pass-chip").focus({preventScroll:true});
   renderPassport();
+
+  // Hero picker: who stands on the focused city (3D scene only).
+  function applyHero(pop) {
+    const scene = window.RouteGlobe3D?.active;
+    $("hero-chip").hidden = !scene?.setHero;
+    $("hero-chip-img").src = "art/hero_" + hero + ".webp";
+    if (!scene?.setHero || (!pop && scene.getHero() === hero)) return;
+    scene.setHero(hero);
+  }
+  function renderHeroes() {
+    $("hero-grid").replaceChildren(...heroes.map(([id, name]) => {
+      const card = document.createElement("button");
+      card.type = "button"; card.className = "hero-card"; card.dataset.hero = id;
+      card.setAttribute("role", "radio"); card.setAttribute("aria-checked", String(id === hero));
+      const img = document.createElement("img"); img.src = "art/hero_" + id + ".webp"; img.alt = "";
+      const label = document.createElement("span"); label.textContent = name;
+      card.append(img, label);
+      card.onclick = () => {
+        const changed = id !== hero;
+        hero = id;
+        try { localStorage.setItem(heroKey, id); } catch {}
+        renderHeroes(); applyHero(changed); renderPriority();
+        if (changed) { const chip = $("hero-chip"); chip.classList.remove("fired"); void chip.offsetWidth; chip.classList.add("fired"); setTimeout(() => chip.classList.remove("fired"), 700); }
+        setTimeout(() => $("heroes").close(), changed ? 260 : 0);
+      };
+      return card;
+    }));
+  }
+  $("hero-chip").onclick = () => { renderHeroes(); $("heroes").showModal(); window.RouteSound?.play("pop"); };
+  $("heroes-close").onclick = () => $("heroes").close();
+  $("heroes").onclose = () => $("hero-chip").focus({preventScroll:true});
+  applyHero();
 
   // Toys bar: physical gags on the 3D planet.
   for (const button of document.querySelectorAll("#toys .toy")) {

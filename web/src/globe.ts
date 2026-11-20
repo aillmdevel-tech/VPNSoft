@@ -98,11 +98,12 @@ export function create3d(element: HTMLCanvasElement, markers: HTMLCanvasElement,
     globe.add(decor.group);
     scene.add(decor.clouds);
     decor.prince.visible = !!show.prince;
+    decor.setHero(wantedHero, -1e9);
     schedule();
   }).catch(err => console.warn("props", err));
 
   // ---- camera framing ----
-  let distance = 6;
+  let distance = 6, wantedHero = "prince";
   function frameCamera() {
     const tanA = 2 * S.r * zoom * Math.tan(FOV * Math.PI / 360);
     distance = 1 / Math.sin(Math.atan(tanA));
@@ -111,18 +112,26 @@ export function create3d(element: HTMLCanvasElement, markers: HTMLCanvasElement,
     camera.updateProjectionMatrix();
   }
   frameCamera();
-  const glowScale = () => element.clientHeight * dpr / (2 * Math.tan(FOV * Math.PI / 360));
+  // The WebGL canvas may bleed past the square .scene box (CSS), so a zoomed planet is not cut
+  // at the box edges. The camera still frames the scene box (setViewOffset), and every public
+  // coordinate (u, v) stays normalized to the scene box.
+  const vp = { ox: 0, oy: 0, sw: 1, sh: 1, cw: 1, ch: 1 };
+  const glowScale = () => vp.sh * dpr / (2 * Math.tan(FOV * Math.PI / 360));
+  const toCanvas = (u: number, v: number) => new THREE.Vector2(((u * vp.sw + vp.ox) / vp.cw) * 2 - 1, 1 - ((v * vp.sh + vp.oy) / vp.ch) * 2);
 
   function resize() {
-    const w = element.clientWidth || 360, h = element.clientHeight || w;
+    const box = (element.closest(".scene") as HTMLElement | null)?.getBoundingClientRect(), own = element.getBoundingClientRect();
+    const w = Math.round(own.width) || element.clientWidth || 360, h = Math.round(own.height) || element.clientHeight || w;
+    const sw = box && box.width ? box.width : w, sh = box && box.height ? box.height : h;
+    Object.assign(vp, { ox: box && box.width ? box.left - own.left : 0, oy: box && box.height ? box.top - own.top : 0, sw, sh, cw: w, ch: h });
     renderer.setSize(w, h, false);
     composer?.setSize(w, h, false);
-    camera.aspect = w / h; camera.updateProjectionMatrix();
+    camera.setViewOffset(sw, sh, -vp.ox, -vp.oy, w, h);
     (glows.points.material as THREE.ShaderMaterial).uniforms.uScale.value = glowScale();
     if (decor) (decor.lights.material as THREE.ShaderMaterial).uniforms.uScale.value = glowScale();
     schedule();
   }
-  new ResizeObserver(resize).observe(element);
+  { const ro = new ResizeObserver(resize); ro.observe(element); const box = element.closest(".scene"); if (box) ro.observe(box); }
 
   function applyBasis() {
     const m = new THREE.Matrix4().set(
@@ -142,11 +151,11 @@ export function create3d(element: HTMLCanvasElement, markers: HTMLCanvasElement,
     globe.localToWorld(tmp);
     const z = dot(d, basis.slice(6, 9));
     tmp.project(camera);
-    return [(tmp.x + 1) / 2, (1 - tmp.y) / 2, z];
+    return [((tmp.x + 1) / 2 * vp.cw - vp.ox) / vp.sw, ((1 - tmp.y) / 2 * vp.ch - vp.oy) / vp.sh, z];
   }
   const ray = new THREE.Raycaster();
   function worldAt(u: number, v: number): V3 | null {
-    ray.setFromCamera(new THREE.Vector2(u * 2 - 1, 1 - v * 2), camera);
+    ray.setFromCamera(toCanvas(u, v), camera);
     const o = ray.ray.origin.clone(), d = ray.ray.direction;
     const inv = new THREE.Matrix4().copy(holder.matrixWorld).invert();
     o.applyMatrix4(inv);
@@ -193,11 +202,12 @@ export function create3d(element: HTMLCanvasElement, markers: HTMLCanvasElement,
     const n = V(direction(show.prince.lat, show.prince.lon));
     // Stand up toward the screen (sticker-like) so the Prince reads as a figure, not a hair dot from above.
     const camLocal = V(basis.slice(6, 9)), upLocal = V(basis.slice(3, 6));
-    const stand = n.clone().multiplyScalar(.38).addScaledVector(upLocal, .62).normalize();
+    const car = decor.hero === "rv";  // a vehicle sits on the ground, seen three-quarter from the side
+    const stand = car ? n.clone().multiplyScalar(.5).addScaledVector(upLocal, .5).normalize() : n.clone().multiplyScalar(.38).addScaledVector(upLocal, .62).normalize();
     const f = camLocal.clone().addScaledVector(stand, -camLocal.dot(stand));
     if (f.lengthSq() < 1e-6) f.copy(north(n).negate());
     const yaw = Math.sin(t * .4) * .25;
-    f.normalize().applyAxisAngle(stand, .3 + (still ? 0 : yaw));
+    f.normalize().applyAxisAngle(stand, (car ? 1.05 : .3) + (still ? 0 : yaw * (car ? .4 : 1)));
     const lift = show.prince.lift;
     princeVel = (lift - princeLift) / Math.max(dt, 1e-3); princeLift = lift;
     orient(P, stand, f, 0);
@@ -219,6 +229,32 @@ export function create3d(element: HTMLCanvasElement, markers: HTMLCanvasElement,
     set("prince_leg_r", o => { o.rotation.x += -air * .35 * s; });
     const wind = clamp(spin * .6, 0, 1.2);
     for (let i = 0; i < 4; i++) set("prince_scarf" + i, o => { o.rotation.x += (Math.sin(t * 3.1 - i * .7) * .18 + air * .5 + wind * .4) * s; o.rotation.z += Math.sin(t * 2.3 - i * .9) * .12 * s; });
+    // Other heroes: the whole figure squashes, hops and sways; the bear also moves head and arms.
+    const id = decor.hero, hero = decor.heroes[id], hr = hero?.userData.rest;
+    if (!hero || !hr) return;
+    const popK = (performance.now() - decor.heroPop) / 560;
+    const pop = popK >= 1 || still ? 1 : 1 + Math.sin(popK * Math.PI * 2.4) * (1 - popK) * .45 - (1 - popK) ** 4;
+    hero.position.copy(hr.p); hero.scale.copy(hr.s).multiplyScalar(pop); hero.rotation.set(0, 0, 0);
+    if (id === "prince") return;
+    const hop = (connected ? Math.max(0, Math.sin(t * 4.8)) ** 2 * .035 : 0) * s;
+    if (id === "rv") {
+      // a camper: suspension bounce on the road, a happy double hop when connected
+      const rumble = travel ? Math.abs(Math.sin(t * 17)) * .004 + Math.sin(t * 5.3) * .002 : Math.sin(t * 1.7) * .0012;
+      hero.position.y += (rumble + hop) * s;
+      hero.rotation.z = (Math.sin(t * 1.9) * .025 + (travel ? Math.sin(t * 7) * .03 : 0)) * s;
+      hero.rotation.x = (travel ? -.06 : 0) * s - air * .25;
+      hero.scale.y *= 2 - sy;
+      return;
+    }
+    hero.position.y += hop + breathe * .3;
+    hero.scale.multiply(new THREE.Vector3(2 - sy - breathe, sy + breathe * 2, 2 - sy - breathe));
+    hero.rotation.z = (Math.sin(t * 1.6) * .05 + (travel ? Math.sin(t * 9) * .08 : 0)) * s;
+    hero.rotation.x = (travel ? .12 : 0) * s - air * .2;
+    if (id === "bear") {
+      set("bear_head", o => { o.rotation.z += Math.sin(t * 1.3) * .1 * s; o.rotation.x += (travel ? -.15 : 0) + Math.sin(t * .9) * .05 * s; });
+      set("bear_arm_l", o => { o.rotation.x += (Math.sin(t * 2.2) * .15 - air * .8) * s; o.rotation.z += (cheer * 2.2 + air * .6) * s; });
+      set("bear_arm_r", o => { o.rotation.x += (-Math.sin(t * 2.2) * .15 - air * .8) * s; o.rotation.z -= ((travel ? 1.9 + Math.sin(t * 9) * .45 : cheer * 2.2) + air * .6) * s; });
+    }
   }
 
   // ---- pins overlay (leader lines) ----
@@ -370,7 +406,7 @@ export function create3d(element: HTMLCanvasElement, markers: HTMLCanvasElement,
   function surfaceTap(u: number, v: number) {
     const time = performance.now() / 1000;
     if (decor && !calm()) {
-      cloudRay.setFromCamera(new THREE.Vector2(u * 2 - 1, 1 - v * 2), camera);
+      cloudRay.setFromCamera(toCanvas(u, v), camera);
       const hit = cloudRay.intersectObjects([...decor.cloudList.map(c => c.obj), decor.volcano], true)[0];
       if (hit) {
         let o: THREE.Object3D | null = hit.object;
@@ -500,7 +536,7 @@ export function create3d(element: HTMLCanvasElement, markers: HTMLCanvasElement,
     drawPins(point);
     positionCrab(point);
     skyTheme();
-    lively = toys.busy || bits.active || hot.active || glows.active || planet.deforming || !!focusAnim || !!(thread && thread.progress < 1) || spin > .05;
+    lively = (!!decor && performance.now() - decor.heroPop < 600) || toys.busy || bits.active || hot.active || glows.active || planet.deforming || !!focusAnim || !!(thread && thread.progress < 1) || spin > .05;
     const busy = !still || toys.busy || bits.active || hot.active || glows.active || planet.deforming || !!focusAnim || (thread && thread.progress < 1);
     if (busy && !document.hidden && element.isConnected) raf = requestAnimationFrame(frame);
   }
@@ -538,6 +574,21 @@ export function create3d(element: HTMLCanvasElement, markers: HTMLCanvasElement,
     getZoom() { return zoom; },
     setZoom(next: number) { zoom = clamp(next, 1, 2.6); frameCamera(); schedule(); },
     reset() { basis = homeBasis(); zoom = 1; frameCamera(); schedule(); },
+    // Selectable hero standing on the focused city: "prince" | "bear" | "pig" | "rv".
+    heroes: ["prince", "bear", "pig", "rv"],
+    getHero() { return decor ? decor.hero : wantedHero; },
+    setHero(id: string) {
+      wantedHero = id;
+      if (!decor) return true;
+      const prev = decor.hero, ok = decor.setHero(id, performance.now());
+      if (ok && prev !== id && show.prince && !calm()) {
+        const n = V(direction(show.prince.lat, show.prince.lon));
+        toys.confetti(n);
+        sound.play("pop");
+      }
+      schedule();
+      return ok;
+    },
     // New: physical toys for the toys bar.
     toy(kind: string) {
       if (calm()) return false;

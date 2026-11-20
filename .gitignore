@@ -17,3 +17,4 @@ __pycache__/
 *.zip
 /art/out/
 /build-*.log
+/art/characters/source/

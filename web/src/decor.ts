@@ -30,8 +30,10 @@ export class Decor {
   trees: Tree[] = [];
   treeMeshes: THREE.InstancedMesh[] = [];
   cities: Record<string, THREE.Object3D> = {};
-  prince: THREE.Object3D;
+  prince: THREE.Object3D;          // carrier: placed/oriented by globe.ts, holds every hero
   princeParts: Record<string, THREE.Object3D> = {};
+  heroes: Record<string, THREE.Object3D> = {};
+  hero = "prince"; heroPop = -1e9;
   plane: THREE.Object3D; boats: { obj: THREE.Object3D; c: V3; r: number; speed: number; t: number }[] = [];
   balloon: THREE.Object3D; whale: THREE.Object3D; volcano: THREE.Object3D;
   cloudList: { obj: THREE.Object3D; lat: number; lon: number; alt: number; speed: number; scale: number; seed: number; dark: number; pop: number }[] = [];
@@ -86,17 +88,27 @@ export class Decor {
     }
 
     // ---- prince ----
-    this.prince = normalize(props.prince.clone(true), .36);
-    // Self-lit a little so the Prince reads on any terrain and on the night side.
-    this.prince.traverse(o => {
-      const m = o as THREE.Mesh;
-      if (!m.isMesh) return;
-      const mat = (m.material as THREE.MeshStandardMaterial).clone();
-      mat.color.offsetHSL(0, .04, .06);
-      mat.emissive = mat.color.clone(); mat.emissiveIntensity = .34; mat.roughness = Math.min(mat.roughness, .55);
-      m.material = mat; m.castShadow = true;
-    });
-    this.prince.traverse(o => { if (o.name.startsWith("prince")) this.princeParts[o.name] = o; });
+    // Heroes: the Prince plus Alex's characters (art/blender/build_characters.py). One is visible at a time.
+    this.prince = new THREE.Group();
+    const heroes: [string, string, number, "height" | "size"][] = [["prince", "prince", .36, "height"], ["bear", "char_bear", .3, "height"], ["pig", "char_pig", .3, "height"], ["rv", "char_rv", .3, "size"]];
+    for (const [id, key, h, by] of heroes) {
+      if (!props[key]) continue;
+      const hero = normalize(props[key].clone(true), h, by);
+      // Self-lit a little so every hero reads on any terrain and on the night side.
+      hero.traverse(o => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        const mat = (m.material as THREE.MeshStandardMaterial).clone();
+        if (mat.map) { mat.emissive = new THREE.Color(1, 1, 1); mat.emissiveMap = mat.map; mat.emissiveIntensity = .3; }
+        else { mat.color.offsetHSL(0, .04, .06); mat.emissive = mat.color.clone(); mat.emissiveIntensity = .34; }
+        mat.roughness = Math.min(mat.roughness, .6); mat.metalness = 0;
+        m.material = mat; m.castShadow = true;
+      });
+      hero.traverse(o => { if (o.name.startsWith(id + "_") || o.name.startsWith("prince")) this.princeParts[o.name] = o; });
+      hero.userData.rest = { p: hero.position.clone(), s: hero.scale.clone() };
+      hero.visible = id === this.hero;
+      this.heroes[id] = hero; this.prince.add(hero);
+    }
     for (const o of Object.values(this.princeParts)) o.userData.rest = { p: o.position.clone(), r: o.rotation.clone(), s: o.scale.clone() };
     this.prince.visible = false;
     this.group.add(this.prince);
@@ -206,6 +218,15 @@ export class Decor {
   }
 
   markTrees() { this.treeDirty = true; }
+  /** Swap the visible hero; returns false for an unknown id. */
+  setHero(id: string, now: number) {
+    if (!this.heroes[id]) return false;
+    if (id === this.hero) return true;
+    for (const [k, o] of Object.entries(this.heroes)) o.visible = k === id;
+    this.hero = id; this.heroPop = now;
+    return true;
+  }
+
   updateTrees(now: number) {
     if (!this.treeDirty) return;
     this.treeDirty = false;

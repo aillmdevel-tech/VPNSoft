@@ -7,3 +7,7 @@
 - [x] Коммит и push ветки redesign/journey-3d
 - [ ] Проверка на Android-устройстве, PR по команде
 - [x] Документация: PROJECT_STATE.md, ART_SPEC.md (отступления), .gitignore
+- [x] Зум без обрезки планеты (canvas bleed + setViewOffset)
+- [x] Выбор героя: Принц/Мишка/Хрюша/Автодом (3D, портреты, диалог, localStorage)
+- [x] Коммит и пуш героев и зума
+- [ ] Проверка героев и зума на Android-устройстве

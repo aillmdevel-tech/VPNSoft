@@ -20,6 +20,7 @@
           <button class="toy" type="button" data-toy="snow" aria-label="Снегопад">❄️<small>Снег</small></button>
           <button class="toy" type="button" data-toy="volcano" aria-label="Вулкан">🌋<small>Вулкан</small></button>
         </div>
+        <button class="hero-chip" type="button" id="hero-chip" aria-label="Выбрать героя"><img id="hero-chip-img" src="art/hero_prince.webp" alt=""><small>Герой</small></button>
         <div id="crab-anchor" class="figure-anchor"><div class="crab-window" aria-hidden="true">
           <div class="crab-water"><img class="crab-body" src="crab.webp" alt=""></div>
           <span class="crab-ripple"></span><span class="crab-ripple ripple-later"></span>
@@ -118,4 +119,7 @@
 <div class="pass-stats"><div><b id="pass-stamps">0</b><span>Штампов</span></div><div><b id="pass-days">0</b><span>Дней в пути</span></div><div><b id="pass-meteors">0</b><span>Метеоритов</span></div></div>
 <div class="stamps" id="stamps"></div>
 <p class="pass-hint">Подключитесь через сервер в новом городе — Принц поставит штамп.</p></dialog>
+<dialog id="heroes" aria-labelledby="heroes-title"><div class="pref-head"><h2 id="heroes-title">Кто путешествует?</h2><button type="button" id="heroes-close" aria-label="Закрыть">×</button></div>
+<div class="hero-grid" id="hero-grid" role="radiogroup" aria-labelledby="heroes-title"></div>
+<p class="pass-hint">Герой стоит на выбранном городе и прыгает с вами по маршруту.</p></dialog>
 <script src="jsQR.js"></script><script src="world-land.js"></script><script src="elevation.js"></script><script src="powder-texture.js"></script><script src="globe.js"></script><script src="globe3d.js"></script><script src="motion-textures.js"></script><script src="motion.js"></script><script src="journey.js"></script></body></html>

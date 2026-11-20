@@ -179,14 +179,14 @@ html.still .preview .main-action{animation:none}
 html.still .server-row{animation:none}
 
 /* ---------- dialogs ---------- */
-.loom,#preferences,#share-dialog,#remove-dialog,#passport{--menu-paper:var(--card);background:var(--card);color:var(--ink);border:0;border-radius:28px;
+.loom,#preferences,#share-dialog,#remove-dialog,#passport,#heroes{--menu-paper:var(--card);background:var(--card);color:var(--ink);border:0;border-radius:28px;
   font-family:var(--sans);box-shadow:0 8px 0 rgba(0,70,100,.18),0 26px 60px rgba(0,50,80,.35)}
-.loom::backdrop,#preferences::backdrop,#share-dialog::backdrop,#remove-dialog::backdrop,#passport::backdrop{background:rgba(16,74,104,.45);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
-#preferences[open],.loom[open],#share-dialog[open],#passport[open]{animation:dialog-pop .32s var(--spring) both}
+.loom::backdrop,#preferences::backdrop,#share-dialog::backdrop,#remove-dialog::backdrop,#passport::backdrop,#heroes::backdrop{background:rgba(16,74,104,.45);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#preferences[open],.loom[open],#share-dialog[open],#passport[open],#heroes[open]{animation:dialog-pop .32s var(--spring) both}
 @keyframes dialog-pop{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
-html.still #preferences[open],html.still .loom[open],html.still #share-dialog[open],html.still #passport[open]{animation:none}
+html.still #preferences[open],html.still .loom[open],html.still #share-dialog[open],html.still #passport[open],html.still #heroes[open]{animation:none}
 .pref-head h2,.loom-head h2,#share-dialog h2{font:900 26px/1.15 var(--sans);letter-spacing:0;color:var(--ink)}
-#pref-close,.loom .x-button,#share-close,#passport-close{border-radius:50%;background:#fff;box-shadow:0 3px 0 var(--card-line);color:var(--ink2);font:900 24px/1 var(--sans);min-width:44px;height:44px;border:0}
+#pref-close,.loom .x-button,#share-close,#passport-close,#heroes-close{border-radius:50%;background:#fff;box-shadow:0 3px 0 var(--card-line);color:var(--ink2);font:900 24px/1 var(--sans);min-width:44px;height:44px;border:0}
 .pref-list,#pref-details,#pref-tunnel,.menu-options{border:2px solid var(--card-line);border-radius:18px;background:#fff;box-shadow:0 3px 0 var(--card-line)}
 .pref-row,.menu-options .choice{font:800 15px/1.35 var(--sans);color:var(--ink)}
 .pref-row:not([hidden])~.pref-row,.menu-options .choice+.choice{border-top:1px solid #f1e8d4}
@@ -234,3 +234,43 @@ html.still .stamp-pop,html.still .stamp.fresh{animation-duration:.01s}
 
 @media(prefers-reduced-motion:reduce){.toy,.planet-pin,.server-row,.pass-chip{animation:none!important;transition:none!important}}
 @media(max-width:375px){.fox-tool .fox-figure{display:block}}
+
+/* ---------- zoom bleed: the 3D canvas extends past the square scene so a zoomed planet is not cut ---------- */
+.preview .scene,.preview .planet-map{overflow:visible}
+.preview .scene #globe-map{inset:auto;top:calc(-1 * var(--bleed-top,74px));
+  --bleed-x:min(180px,max(0px,calc((100vw - 100%) / 2)));left:calc(-1 * var(--bleed-x));width:calc(100% + 2 * var(--bleed-x));
+  height:calc(100% + var(--bleed-top,74px) + var(--bleed-bottom,150px));pointer-events:none;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 36px,#000 calc(100% - 70px),transparent 100%);
+          mask-image:linear-gradient(to bottom,transparent 0,#000 36px,#000 calc(100% - 70px),transparent 100%)}
+.preview .planet-map{cursor:grab}
+.preview .scene.spinning .planet-map{cursor:grabbing}
+.preview .appbar,.preview .scene ~ *{position:relative;z-index:3}
+
+/* ---------- hero picker ---------- */
+.hero-chip{position:absolute;left:6px;top:12%;z-index:9;width:54px;height:54px;border-radius:50%;padding:0;cursor:pointer;overflow:visible;
+  background:radial-gradient(circle at 35% 30%,#fff,#ffeccc);border:3px solid #fff;box-shadow:0 4px 0 rgba(0,80,110,.25);
+  transition:transform .3s var(--spring);touch-action:manipulation}
+.hero-chip img{width:118%;height:118%;margin:-9%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,50,80,.25))}
+.hero-chip small{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:-5px;padding:2px 6px;border-radius:8px;background:#fff;
+  font:900 9.5px/1 var(--sans);color:#21627e;box-shadow:0 2px 0 rgba(0,80,110,.18);white-space:nowrap;pointer-events:none}
+.hero-chip:hover{transform:scale(1.08) rotate(6deg)}
+.hero-chip:active,.hero-chip.fired{transform:scale(.86)}
+.hero-chip.fired::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid var(--gold);animation:ring .7s ease-out both}
+.hero-chip:focus-visible{outline:3px solid #fff;outline-offset:3px}
+html:not(.globe3d) .hero-chip{display:none}
+.hero-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:6px}
+.hero-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 12px;border-radius:20px;cursor:pointer;
+  background:#fff;border:3px solid var(--card-line);box-shadow:0 4px 0 var(--card-line);color:var(--ink);font:900 16px/1.1 var(--sans);
+  transition:transform .3s var(--spring),border-color .2s,box-shadow .2s}
+.hero-card img{width:96px;height:96px;object-fit:contain;transition:transform .35s var(--spring)}
+.hero-card:hover img{transform:translateY(-4px) rotate(-4deg) scale(1.05)}
+.hero-card:active{transform:scale(.94)}
+.hero-card[aria-checked="true"]{border-color:var(--lime1,#8fd14f);box-shadow:0 4px 0 #5f9e2c;background:#f4ffe6}
+.hero-card[aria-checked="true"]::after{content:"✓";position:absolute;top:8px;right:10px;width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;background:var(--lime1,#8fd14f);color:#173d10;font:900 14px/1 var(--sans);animation:hero-tick .35s var(--spring) both}
+@keyframes hero-tick{from{transform:scale(0)}to{transform:scale(1)}}
+#heroes[open] .hero-card{animation:hero-in .42s var(--spring) both}
+#heroes[open] .hero-card:nth-child(2){animation-delay:.05s}#heroes[open] .hero-card:nth-child(3){animation-delay:.1s}#heroes[open] .hero-card:nth-child(4){animation-delay:.15s}
+@keyframes hero-in{from{transform:translateY(14px) scale(.85);opacity:0}to{transform:none;opacity:1}}
+html.still #heroes .hero-card,html.still .hero-card img,html.still .hero-card::after{animation:none;transition:none}
+@media(prefers-reduced-motion:reduce){.hero-chip,.hero-card,.hero-card img{animation:none!important;transition:none!important}}

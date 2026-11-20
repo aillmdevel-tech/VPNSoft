@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import propsUrl from "../assets/props.glb?inline";
+import charsUrl from "../assets/characters.glb?inline";
 
 export type Props = Record<string, THREE.Object3D>;
 
@@ -12,9 +13,24 @@ function dataUrlToBuffer(url: string) {
   return out.buffer;
 }
 
-export function loadProps(): Promise<Props> {
+export async function loadProps(): Promise<Props> {
+  const [props, chars] = await Promise.all([parseGlb(propsUrl), parseGlb(charsUrl)]);
+  return { ...props, ...chars };
+}
+
+function parseGlb(url: string): Promise<Props> {
   return new Promise((resolve, reject) => {
-    new GLTFLoader().parse(dataUrlToBuffer(propsUrl), "", gltf => {
+    // The WebView CSP has connect-src 'none': GLTFLoader's ImageBitmapLoader fetches blob: URLs and is blocked.
+    // Hiding createImageBitmap while the parser is constructed makes it fall back to <img> (img-src allows blob:).
+    const w = window as any, bitmap = w.createImageBitmap;
+    w.createImageBitmap = undefined;
+    try { parseWith(url, resolve, reject); } finally { w.createImageBitmap = bitmap; }
+  });
+}
+
+function parseWith(url: string, resolve: (p: Props) => void, reject: (e: unknown) => void) {
+  {
+    new GLTFLoader().parse(dataUrlToBuffer(url), "", gltf => {
       const out: Props = {};
       for (const child of [...gltf.scene.children]) {
         child.position.set(0, 0, 0);
@@ -30,7 +46,7 @@ export function loadProps(): Promise<Props> {
       }
       resolve(out);
     }, reject);
-  });
+  }
 }
 
 /** Re-centre on the ground (y = 0), centred in x/z, scaled to the given height. */
@@ -40,7 +56,7 @@ export function normalize(obj: THREE.Object3D, height: number, by: "height" | "s
   const k = height / (by === "height" ? size.y : Math.max(size.x, size.y, size.z));
   const wrap = new THREE.Group();
   obj.position.set(-(box.min.x + box.max.x) / 2 * k, -box.min.y * k, -(box.min.z + box.max.z) / 2 * k);
-  obj.scale.setScalar(k);
+  obj.scale.multiplyScalar(k); // keep the root's own scale (characters.glb roots carry one)
   wrap.add(obj);
   return wrap;
 }
